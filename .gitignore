@@ -1,0 +1,24 @@
+# Python files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Executables and Libraries
+cronet_helper
+cronet_helper.dSYM/
+*.dylib
+*.so
+*.dll
+*.exe
+*.bin
+*.out
+*.zip
+
+# Local configurations / logs
+*.log
+output.mp3
+test_audio.mp3
