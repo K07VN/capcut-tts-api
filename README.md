@@ -1,8 +1,8 @@
-# 🎙️ CapCut TTS & ASR API Client (Bilingual: VI / EN)
+# 🎙️ CapCut TTS API Client (Bilingual: VI / EN)
 
-> **🇻🇳 Việt Nam:** Dự án mã nguồn mở cung cấp giải pháp chuyển đổi văn bản thành giọng nói (TTS) và nhận diện giọng nói (ASR) thông qua kết nối trực tiếp tới API ẩn của CapCut Desktop mà không cần giao diện người dùng. Hỗ trợ đầy đủ macOS và Windows.
+> **🇻🇳 Việt Nam:** Dự án mã nguồn mở cung cấp giải pháp chuyển đổi văn bản thành giọng nói (TTS) thông qua kết nối trực tiếp tới API ẩn của CapCut Desktop mà không cần giao diện người dùng. Hỗ trợ đầy đủ macOS và Windows.
 >
-> **🇬🇧 English:** A high-performance Python/C++ wrapper connecting directly to CapCut Desktop's internal APIs for Text-to-Speech (TTS) and Speech-to-Text (ASR) synthesis without spawning a GUI. Fully compatible with both macOS and Windows.
+> **🇬🇧 English:** A high-performance Python/C++ wrapper connecting directly to CapCut Desktop's internal APIs for Text-to-Speech (TTS) synthesis without spawning a GUI. Fully compatible with both macOS and Windows.
 
 ---
 
