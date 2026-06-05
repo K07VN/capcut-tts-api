@@ -40,6 +40,28 @@ VOICE_PLATFORM    = "sami"
 VOICE_RATE        = "1.0"
 ```
 
+### 📂 Hướng Dẫn Tìm Đường Dẫn Thư Viện Cronet (`sscronet.dll` / `libsscronet.dylib`)
+
+Cơ chế gửi request của CapCut sử dụng thư viện mạng Cronet của Chromium được tùy biến. Dự án cần liên kết trực tiếp tới thư viện này để không bị chặn bởi tường lửa của TikTok/CapCut.
+
+#### 1. Trên Windows (`sscronet.dll`):
+Tệp tin `sscronet.dll` nằm trong thư mục cài đặt của ứng dụng CapCut.
+*   **Đường dẫn mặc định:**
+    `C:\Users\<Tên_User>\AppData\Local\CapCut\Apps\<Phiên_Bản_CapCut>\sscronet.dll`
+*   **Cách lấy nhanh:**
+    1. Nhấn tổ hợp phím `Windows + R`, nhập `%localappdata%\CapCut\Apps` và nhấn `Enter`.
+    2. Truy cập vào thư mục phiên bản hiện tại (ví dụ: `8.7.0.3685`).
+    3. Tìm file `sscronet.dll`. Nhấn giữ phím `Shift` và click chuột phải vào file, chọn **Copy as path** (Sao chép dưới dạng đường dẫn).
+    4. Dán đường dẫn này vào biến `SSCRONET_DLL` trong file `capcut_windows/config.py`. *Lưu ý dùng tiền tố `r` (raw string), ví dụ:* `SSCRONET_DLL = r"C:\Users\K07VN\AppData\Local\CapCut\Apps\8.7.0.3685\sscronet.dll"`
+
+#### 2. Trên macOS (`libsscronet.dylib`):
+Thư viện này nằm trực tiếp bên trong App Bundle của CapCut.
+*   **Đường dẫn mặc định:**
+    `/Applications/CapCut.app/Contents/Frameworks/libsscronet.dylib`
+*   **Chi tiết:**
+    *   Nếu He cài đặt CapCut trong thư mục Ứng dụng mặc định của hệ thống (`/Applications`), đường dẫn này sẽ tự động chính xác và C++ helper (`cronet_helper.cpp`) sẽ gọi thành công mà không cần cấu hình thêm.
+    *   Trong trường hợp cài đặt CapCut ở thư mục người dùng hoặc thư mục ứng dụng tùy chỉnh, hãy mở file [capcut_macos/cronet_helper.cpp](file:///Users/admin/Downloads/capcut_new/capcut_macos/cronet_helper.cpp) và sửa đường dẫn tại hàm `dlopen` ở dòng 125 tương ứng với vị trí thực tế của `libsscronet.dylib`.
+
 ---
 
 ## 🔍 Hướng Dẫn Bắt Payload API & Reverse-Engineering
