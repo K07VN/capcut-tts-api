@@ -1,134 +1,126 @@
-# CapCut TTS & ASR API Client
+# 🎙️ CapCut TTS & ASR API Client (Bilingual: VI / EN)
 
-Dự án cung cấp thư viện Python kết nối trực tiếp đến API CapCut (TTS - Text to Speech và ASR - Speech to Text) mà không cần chạy giao diện ứng dụng. Dự án hỗ trợ đa nền tảng (macOS và Windows).
-
----
-
-## 📂 Cấu Trúc Dự Án
-
-*   **Dành cho macOS (Thư mục `capcut_macos/`):**
-    *   [capcut_macos/capcut_tts_ctypes.py](file:///Users/admin/Downloads/capcut_new/capcut_macos/capcut_tts_ctypes.py): Kịch bản chính trên macOS, sử dụng ctypes để gọi và biên dịch `cronet_helper.cpp` thành binary hỗ trợ gửi request qua Cronet.
-    *   [capcut_macos/config.py](file:///Users/admin/Downloads/capcut_new/capcut_macos/config.py): File cấu hình tập trung chứa thông tin thiết bị, ứng dụng, và giọng đọc (Single Source of Truth).
-    *   [capcut_macos/cronet_helper.cpp](file:///Users/admin/Downloads/capcut_new/capcut_macos/cronet_helper.cpp): Cầu nối C++ gọi thư viện mạng `libsscronet` của CapCut macOS.
-*   **Dành cho Windows (Thư mục `capcut_windows/`):**
-    *   [capcut_windows/capcut_tts_ctypes.py](file:///Users/admin/Downloads/capcut_new/capcut_windows/capcut_tts_ctypes.py): Kịch bản chính chạy trên Windows, tương thích hoàn toàn cấu hình.
-    *   [capcut_windows/config.py](file:///Users/admin/Downloads/capcut_new/capcut_windows/config.py): File cấu hình tập trung cho Windows.
-    *   [capcut_windows/cronet_client.py](file:///Users/admin/Downloads/capcut_new/capcut_windows/cronet_client.py): Wrapper ctypes kết nối tới DLL của Cronet trên Windows.
-    *   [capcut_windows/cronet_helper_dll.cpp](file:///Users/admin/Downloads/capcut_new/capcut_windows/cronet_helper_dll.cpp): File nguồn C++ biên dịch ra DLL trên Windows.
+> **🇻🇳 Việt Nam:** Dự án mã nguồn mở cung cấp giải pháp chuyển đổi văn bản thành giọng nói (TTS) và nhận diện giọng nói (ASR) thông qua kết nối trực tiếp tới API ẩn của CapCut Desktop mà không cần giao diện người dùng. Hỗ trợ đầy đủ macOS và Windows.
+>
+> **🇬🇧 English:** A high-performance Python/C++ wrapper connecting directly to CapCut Desktop's internal APIs for Text-to-Speech (TTS) and Speech-to-Text (ASR) synthesis without spawning a GUI. Fully compatible with both macOS and Windows.
 
 ---
 
-## ⚙️ Cấu Hình (config.py)
+## 🗺️ 1. File Structure & Roles / Cấu Trúc File & Chức Năng
 
-Cả macOS và Windows đều sử dụng file `config.py` riêng biệt để quản lý tham số. 
+Here is the breakdown of the project layout and the function of each file:
+Dưới đây là chi tiết sơ đồ thư mục và vai trò cụ thể của từng tệp tin:
 
-```python
-# Ví dụ config.py cho macOS
-APP_ID      = "359289"
-APP_VR      = "8.6.0"
-APP_CHANNEL = "App Store"
+### 🍏 macOS Component (`capcut_macos/`)
+*   **[capcut_macos/capcut_tts_ctypes.py](file:///Users/admin/Downloads/capcut_new/capcut_macos/capcut_tts_ctypes.py)**
+    *   🇻🇳 Kịch bản Python chính cho macOS. Chịu trách nhiệm khởi tạo payload SSML, ký mã hóa (signing) bằng RSA, gọi thực thi binary `cronet_helper` để gửi yêu cầu và thực hiện polling tải audio.
+    *   🇬🇧 The main Python orchestrator for macOS. Formulates the SSML payload, generates the RSA signature, triggers the `cronet_helper` binary, and polls the server for completion.
+*   **[capcut_macos/config.py](file:///Users/admin/Downloads/capcut_new/capcut_macos/config.py)**
+    *   🇻🇳 Lưu trữ cấu hình tập trung (App ID, Device ID, tên giọng nói, ngôn ngữ). Điểm cấu hình duy nhất trên macOS.
+    *   🇬🇧 Single source of truth config file containing device metadata, app versioning, and default voice profiles on macOS.
+*   **[capcut_macos/cronet_helper.cpp](file:///Users/admin/Downloads/capcut_new/capcut_macos/cronet_helper.cpp)**
+    *   🇻🇳 Mã nguồn C++ liên kết động với `libsscronet.dylib` của CapCut macOS để xử lý luồng mạng bất tuần tự thông qua CFRunLoop.
+    *   🇬🇧 Native C++ source using dynamic loading (`dlopen`/`dlsym`) for `libsscronet.dylib` and executing asynchronous requests inside a `CFRunLoop`.
 
-DEVICE_ID       = "7647183892936328721"
-IID             = "7647185302080423697"
-OS_VERSION      = "15.7.4"
-DEVICE_TYPE     = "MacBookPro17,1"
-DEVICE_PLATFORM = "mac"
+---
 
-VOICE_NAME        = "DiT_zh_male_xionger"
-VOICE_RESOURCE_ID = "7564318793716059409"
-VOICE_PLATFORM    = "sami"
-VOICE_RATE        = "1.0"
+### 🔑 Windows Component (`capcut_windows/`)
+*   **[capcut_windows/capcut_tts_ctypes.py](file:///Users/admin/Downloads/capcut_new/capcut_windows/capcut_tts_ctypes.py)**
+    *   🇻🇳 Kịch bản Python chạy trên Windows. Giao tiếp trực tiếp với `cronet_helper.dll` thông qua ctypes để thực hiện gửi request mạng Cronet.
+    *   🇬🇧 The main Python client on Windows, interfacing directly with compiled helper DLL using Python's `ctypes`.
+*   **[capcut_windows/config.py](file:///Users/admin/Downloads/capcut_new/capcut_windows/config.py)**
+    *   🇻🇳 Cấu hình hệ thống Windows bao gồm tham số thiết bị và đường dẫn tuyệt đối dẫn tới `sscronet.dll`.
+    *   🇬🇧 Config manager containing device values and absolute path to the local CapCut `sscronet.dll` library.
+*   **[capcut_windows/cronet_client.py](file:///Users/admin/Downloads/capcut_new/capcut_windows/cronet_client.py)**
+    *   🇻🇳 Thư viện Python ctypes wrapper nạp trực tiếp `cronet_helper.dll` và thực thi truy xuất mạng.
+    *   🇬🇧 A thin Python ctypes wrapper managing memory mapping and exports of `cronet_helper.dll`.
+*   **[capcut_windows/cronet_helper_dll.cpp](file:///Users/admin/Downloads/capcut_new/capcut_windows/cronet_helper_dll.cpp)**
+    *   🇻🇳 Mã nguồn C++ biên dịch thành thư viện động DLL trên Windows sử dụng Win32 API và Cronet engine.
+    *   🇬🇧 C++ DLL source designed for Windows, wrapping Cronet calls with custom export interfaces.
+*   **[capcut_windows/build.bat](file:///Users/admin/Downloads/capcut_new/capcut_windows/build.bat)**
+    *   🇻🇳 Script tự động biên dịch C++ Windows qua trình biên dịch MSVC (cl.exe).
+    *   🇬🇧 Automated batch build file invoking Microsoft Visual C++ Compiler (`cl.exe`).
+
+---
+
+## 🛠️ 2. Build Instructions / Hướng Dẫn Biên Dịch C++
+
+### 🍏 On macOS:
+> [!NOTE]
+> Kịch bản Python `capcut_tts_ctypes.py` sẽ **tự động kiểm tra và biên dịch** mã nguồn C++ tại lần chạy đầu tiên. Nếu muốn biên dịch thủ công, sử dụng lệnh bên dưới.
+>
+> The Python driver automatically compiles this on the fly. To compile manually, run the following:
+
+```bash
+cd capcut_macos
+clang++ -O3 -std=c++17 -framework CoreFoundation -framework Foundation cronet_helper.cpp -o cronet_helper
 ```
 
-### 📂 Hướng Dẫn Tìm Đường Dẫn Thư Viện Cronet (`sscronet.dll` / `libsscronet.dylib`)
-
-Cơ chế gửi request của CapCut sử dụng thư viện mạng Cronet của Chromium được tùy biến. Dự án cần liên kết trực tiếp tới thư viện này để không bị chặn bởi tường lửa của TikTok/CapCut.
-
-#### 1. Trên Windows (`sscronet.dll`):
-Tệp tin `sscronet.dll` nằm trong thư mục cài đặt của ứng dụng CapCut.
-*   **Đường dẫn mặc định:**
-    `C:\Users\<Tên_User>\AppData\Local\CapCut\Apps\<Phiên_Bản_CapCut>\sscronet.dll`
-*   **Cách lấy nhanh:**
-    1. Nhấn tổ hợp phím `Windows + R`, nhập `%localappdata%\CapCut\Apps` và nhấn `Enter`.
-    2. Truy cập vào thư mục phiên bản hiện tại (ví dụ: `8.7.0.3685`).
-    3. Tìm file `sscronet.dll`. Nhấn giữ phím `Shift` và click chuột phải vào file, chọn **Copy as path** (Sao chép dưới dạng đường dẫn).
-    4. Dán đường dẫn này vào biến `SSCRONET_DLL` trong file `capcut_windows/config.py`. *Lưu ý dùng tiền tố `r` (raw string), ví dụ:* `SSCRONET_DLL = r"C:\Users\K07VN\AppData\Local\CapCut\Apps\8.7.0.3685\sscronet.dll"`
-
-#### 2. Trên macOS (`libsscronet.dylib`):
-Thư viện này nằm trực tiếp bên trong App Bundle của CapCut.
-*   **Đường dẫn mặc định:**
-    `/Applications/CapCut.app/Contents/Frameworks/libsscronet.dylib`
-*   **Chi tiết:**
-    *   Nếu He cài đặt CapCut trong thư mục Ứng dụng mặc định của hệ thống (`/Applications`), đường dẫn này sẽ tự động chính xác và C++ helper (`cronet_helper.cpp`) sẽ gọi thành công mà không cần cấu hình thêm.
-    *   Trong trường hợp cài đặt CapCut ở thư mục người dùng hoặc thư mục ứng dụng tùy chỉnh, hãy mở file [capcut_macos/cronet_helper.cpp](file:///Users/admin/Downloads/capcut_new/capcut_macos/cronet_helper.cpp) và sửa đường dẫn tại hàm `dlopen` ở dòng 125 tương ứng với vị trí thực tế của `libsscronet.dylib`.
+### 🔑 On Windows:
+1. Mở công cụ **Developer Command Prompt for VS** (Để nạp các biến môi trường MSVC `cl.exe`).
+2. Di chuyển tới thư mục `capcut_windows` và chạy kịch bản biên dịch:
+```cmd
+cd capcut_windows
+build.bat
+```
+*Trình biên dịch sẽ tạo ra file thư viện động `cronet_helper.dll`.*
 
 ---
 
-## 🔍 Hướng Dẫn Bắt Payload API & Reverse-Engineering
+## 📂 3. Locating Cronet Engine / Hướng Dẫn Tìm Đường Dẫn Thư Viện Mạng
 
-Để lấy chính xác `voice name` (tên giọng đọc nội bộ) và `resource_id` của các giọng đọc khác trong CapCut, người dùng cần bắt gói tin mạng khi ứng dụng CapCut hoạt động.
+> [!WARNING]
+> CapCut chặn hầu hết các thư viện HTTP thông thường (`requests`, `urllib`). Bạn bắt buộc phải chỉ định đúng đường dẫn thư viện Cronet của CapCut để vượt qua tường lửa.
+>
+> CapCut blocks standard Python HTTP clients. You must link against CapCut's authentic Cronet network library.
 
-### 1. Chuẩn Bị Công Cụ Proxy
-Sử dụng các phần mềm bắt gói tin (Intercepting Proxy) phổ biến:
-*   **Charles Proxy** hoặc **Proxyman** (Khuyên dùng trên macOS).
-*   **Fiddler Classic** / **Fiddler Everywhere** (Khuyên dùng trên Windows).
-*   **Burp Suite** (Dành cho chuyên gia).
+#### 🍏 macOS (`libsscronet.dylib`):
+*   **Default Path / Đường dẫn mặc định:** `/Applications/CapCut.app/Contents/Frameworks/libsscronet.dylib`
+*   *Nếu CapCut được cài đặt ở thư mục ứng dụng mặc định, hệ thống sẽ tự nạp thành công mà không cần cấu hình thêm.*
 
-### 2. Cài Đặt Chứng Chỉ SSL (SSL Decryption)
-Vì CapCut sử dụng giao thức HTTPS bảo mật, bạn bắt buộc phải cài đặt và kích hoạt tin cậy chứng chỉ gốc (Root Certificate) của phần mềm Proxy trên máy tính thì mới có thể đọc được nội dung payload dạng JSON.
+#### 🔑 Windows (`sscronet.dll`):
+1. Nhấn tổ hợp `Windows + R`, gõ `%localappdata%\CapCut\Apps` và bấm `Enter`.
+2. Mở thư mục mang tên phiên bản hiện tại (Ví dụ: `8.7.0.3685`).
+3. Tìm file `sscronet.dll`, giữ phím `Shift` + chuột phải và chọn **Copy as path** (Sao chép đường dẫn).
+4. Dán đường dẫn này vào biến `SSCRONET_DLL` trong tệp [capcut_windows/config.py](file:///Users/admin/Downloads/capcut_new/capcut_windows/config.py) dưới dạng raw string:
+   `SSCRONET_DLL = r"C:\Users\<Tên_User>\AppData\Local\CapCut\Apps\8.7.0.3685\sscronet.dll"`
 
-### 3. Bắt Gói Tin API Mục Tiêu
-1. Mở phần mềm Proxy và bật tính năng SSL Proxying cho domain `*.capcutapi.com`.
-2. Mở ứng dụng CapCut Desktop lên.
-3. Thực hiện thao tác tạo phụ đề tự động (Auto Captions) hoặc sử dụng tính năng Text-to-Speech (Đọc văn bản).
-4. Tìm gói tin có URL khớp hoặc tương tự định dạng dưới đây:
+---
+
+## 🔍 4. Proxy Capture & Reversing / Hướng Dẫn Bắt Gói Tin & Reverse API
+
+Để lấy chính xác `voice name` và `resource_id` cho các giọng đọc độc quyền, He cần bắt gói tin HTTPS.
+
+### Steps / Các Bước Thực Hiện:
+1. **Setup Proxy / Cài đặt proxy:** Cài đặt công cụ phân tích mạng (Proxyman / Charles Proxy / Fiddler). Cài đặt chứng chỉ Root để bật giải mã HTTPS (SSL Decryption).
+2. **Trigger Request / Gửi gói tin:** Mở CapCut Desktop và thực hiện thao tác Thêm Phụ Đề (Auto Captions) hoặc Đọc Văn Bản (Text-to-Speech).
+3. **Capture Target URL / Lọc gói tin:** Tìm URL khớp với định dạng:
    ```http
-   https://editor-api-sg.capcutapi.com/lv/v1/common_task/new?app_name=CapCut&device_type=MacBookPro17,1&os_version=15.7.4&channel=App%20Store&version_name=8.6.0&device_brand=MacBookPro17,1&babi_param=%7B%22feature_entrance%22%3A%22editor%22%2C%22feature_entrance_detail%22%3A%22editor-elements-captions-subtitle_recognition%22%2C%22feature_key%22%3A%22subtitle_recognition%22%2C%22scenario%22%3A%22video_editor%22%7D&device_id=7647183892936328721&iid=7647185302080423697&region=VN&version_code=8.6.0&device_platform=mac&aid=359289
+   https://editor-api-sg.capcutapi.com/lv/v1/common_task/new?app_name=CapCut&device_type=MacBookPro17,1...
    ```
+4. **Extract Parameter / Trích xuất giá trị:**
+   *   Mở tab JSON Body của gói tin vừa bắt. Tìm trường cấu trúc dữ liệu `ssml`.
+   *   Trích xuất tên giọng đọc tại thuộc tính `name` (Ví dụ: `DiT_zh_male_xionger`) và mã giọng đọc tại `resource_id` (Ví dụ: `7564318793716059409`).
+   *   Thay các giá trị này vào file `config.py` để sử dụng giọng đọc đó.
 
-### 4. Phân Tích Payload Đọc Gói Tin (Reverse API)
-Nhấp vào gói tin POST được bắt, chọn tab **JSON / Raw Body** để xem nội dung payload gửi đi:
-
-*   **Lấy `voice_name` và `resource_id`:**
-    Trong JSON body, bạn tìm cấu trúc SSML được gửi lên nằm ở trường `"ssml"`. Nó có dạng:
-    ```xml
-    <speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
-        <voice name="DiT_zh_male_xionger" platform="sami" resource_id="7564318793716059409" ...>
-            <prosody rate="1.0">...</prosody>
-        </voice>
-    </speak>
-    ```
-    Hãy copy giá trị của thuộc tính `name` (tức `DiT_zh_male_xionger`) điền vào `VOICE_NAME` và giá trị của thuộc tính `resource_id` (tức `7564318793716059409`) điền vào `VOICE_RESOURCE_ID` trong file `config.py`.
-
-*   **Cơ chế ký mã nguồn (API Signing Reverse Engineering):**
-    *   **Sign Header (`sign`):** Headers của request chứa chữ ký xác thực sinh ra theo quy luật:
-        `MD5("9e2c|" + url_path_suffix + "|3|" + version + "|" + timestamp + "|" + device_id + "|11ac")`
-    *   **Sign Body Payload:** Một tham số chữ ký mã hóa RSA-PKCS1v15 nằm trong body JSON giúp server kiểm soát toàn vẹn dữ liệu SSML. Định dạng dữ liệu thô đầu vào trước khi mã hóa bằng khóa công khai (Public Key):
-        `appid:{APP_ID}&did:{DEVICE_ID}&creditDisable:false&ssml:{MD5(SSML)}&extraInfo:{EXTRA_INFO}`
+### Reversing Mechanism / Cơ Chế Ký Xác Thực:
+*   **x-ss-stub / x-ss-stub Header:** MD5 Hash của toàn bộ Request JSON Body.
+*   **Sign Header:** Sử dụng chuỗi salt đặc trưng được băm MD5 để xác thực request:
+    `MD5("9e2c|" + url_path_suffix + "|3|" + app_version + "|" + device_time + "|" + device_id + "|11ac")`
+*   **Body Sign:** SSML được mã hóa bất đối xứng RSA-PKCS1v15 từ mã hash MD5 của cấu trúc SSML kèm các giá trị ID thiết bị để đảm bảo tính chống can thiệp.
 
 ---
 
-## 🚀 Cách Chạy Dự Án
+## 🚀 5. How to Run / Cách Vận Hành Dự Án
 
-### Trên macOS:
-1. Đảm bảo bạn đã cài đặt Python 3 và Xcode Command Line Tools (để có `clang++`).
-2. Di chuyển vào thư mục `capcut_macos`:
-   ```bash
-   cd capcut_macos
-   ```
-3. Chạy kịch bản:
-   ```bash
-   python3 capcut_tts_ctypes.py "Nội dung văn bản cần đọc"
-   ```
-   Kịch bản sẽ tự động biên dịch `cronet_helper.cpp` nếu chưa có file thực thi, thực hiện ký payload và tải file audio TTS về.
+### 🍏 macOS:
+```bash
+cd capcut_macos
+python3 capcut_tts_ctypes.py "Chào anh, đây là giọng nói thử nghiệm."
+```
 
-### Trên Windows:
-1. Di chuyển vào thư mục `capcut_windows`:
-   ```cmd
-   cd capcut_windows
-   ```
-2. Chạy file batch `build.bat` để biên dịch DLL trợ giúp (yêu cầu bộ biên dịch MSVC/g++).
-3. Chạy lệnh:
-   ```cmd
-   python capcut_tts_ctypes.py "Nội dung văn bản cần đọc"
-   ```
+### 🔑 Windows:
+```cmd
+cd capcut_windows
+python capcut_tts_ctypes.py "Chào anh, đây là giọng nói thử nghiệm."
+```
