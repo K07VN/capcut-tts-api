@@ -296,6 +296,12 @@ These are external reference services, not package dependencies. Do not upload p
 - If a voice is rejected, verify the service ID and account/region availability. `Voice.json` is a local reference.
 - If a translated SRT is empty, confirm `use_translation=True` and inspect whether the response contains `translation_text`.
 
+<h2 align="center">📣 Help spread the word</h2>
+
+If you build a tool, tutorial, or project with this package, please consider sharing it with others and mentioning the repository. A star, recommendation, or bit of feedback helps more developers discover the project and supports its continued development.
+
+<p align="center"><a href="https://github.com/K07VN/capcut-tts-api"><strong>Share the repository</strong></a></p>
+
 <h2 align="center">⭐ Star History</h2>
 
 <a href="https://www.star-history.com/?repos=k07vn%2Fcapcut-tts-api&type=date&legend=top-left">

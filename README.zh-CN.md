@@ -292,6 +292,12 @@ python -m capcut_tts_api.cli stt-new --audio-vid VOD_ID --audio-md5 MD5 --durati
 - 语音被拒绝时，检查 service ID 及账号/地区权限；`Voice.json` 只是本地目录。
 - 翻译 SRT 为空时，确认 `use_translation=True` 并检查 response 是否含 `translation_text`。
 
+<h2 align="center">📣 帮助分享项目</h2>
+
+如果你用这个 package 制作了工具、教程或其他项目，欢迎在觉得有帮助时分享给更多人并推荐本仓库。点个 star、分享推荐或留下反馈，都能让更多开发者发现这个项目，并支持它持续改进。
+
+<p align="center"><a href="https://github.com/K07VN/capcut-tts-api"><strong>分享仓库</strong></a></p>
+
 <h2 align="center">⭐ Star History</h2>
 
 <a href="https://www.star-history.com/?repos=k07vn%2Fcapcut-tts-api&type=date&legend=top-left">

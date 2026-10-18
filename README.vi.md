@@ -292,6 +292,12 @@ Method chính: `list_voices`, `resolve_voice`, `build_tts_new_request`, `create_
 - Nếu voice bị từ chối, kiểm tra service ID và quyền tài khoản/khu vực; `Voice.json` chỉ là catalog cục bộ.
 - Nếu SRT dịch rỗng, kiểm tra `use_translation=True` và trường `translation_text` trong response.
 
+<h2 align="center">📣 Cùng chia sẻ dự án</h2>
+
+Nếu bạn dùng package này để làm tool, viết hướng dẫn hoặc xây dựng dự án, hãy giới thiệu repo cho mọi người nếu thấy hữu ích. Một lượt star, lời giới thiệu hoặc góp ý của bạn sẽ giúp thêm nhiều developer biết đến dự án và góp phần duy trì package.
+
+<p align="center"><a href="https://github.com/K07VN/capcut-tts-api"><strong>Chia sẻ repository</strong></a></p>
+
 <h2 align="center">⭐ Star History</h2>
 
 <a href="https://www.star-history.com/?repos=k07vn%2Fcapcut-tts-api&type=date&legend=top-left">
