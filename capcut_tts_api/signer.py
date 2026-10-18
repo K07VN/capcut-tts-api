@@ -1,5 +1,7 @@
-"""
-Pure Python cryptography, payload signing, and request authentication for CapCut API.
+"""Pure-Python hashing and VOD signing helpers.
+
+The TTS payload signature algorithm is not implemented here because the
+reverse-engineering evidence does not establish its key material or details.
 """
 
 import base64
@@ -92,10 +94,11 @@ def rsa_public_numbers_from_pem(pem: str) -> Tuple[int, int]:
         raise CapCutSignError(f"Failed to parse RSA PEM public key: {exc}") from exc
 
 
-def rsa_encrypt_pkcs1v15(message: Union[str, bytes], pem: str = TTS_SIGN_PUBLIC_KEY_PEM) -> str:
+def rsa_encrypt_pkcs1v15(message: Union[str, bytes], pem: str) -> str:
     """
     Encrypt message using RSA PKCS#1 v1.5 with standard library cryptography logic.
-    Returns Base64 encoded signature.
+    Returns Base64 encoded ciphertext. RSA public-key encryption is not a
+    digital signature and this generic helper is not used for TTS signing.
     """
     modulus, exponent = rsa_public_numbers_from_pem(pem)
     key_len = (modulus.bit_length() + 7) // 8
@@ -112,17 +115,34 @@ def rsa_encrypt_pkcs1v15(message: Union[str, bytes], pem: str = TTS_SIGN_PUBLIC_
     return base64.b64encode(encrypted).decode("ascii")
 
 
-def make_tts_payload_sign(ssml: str, extra_info: Optional[str], device_id: str, app_id: str) -> str:
-    """Generate RSA PKCS#1 v1.5 signature for TTS task inner payload."""
+def make_tts_payload_sign(
+    ssml: str,
+    extra_info: Optional[str],
+    device_id: str,
+    app_id: str,
+    *,
+    pem: str = TTS_SIGN_PUBLIC_KEY_PEM,
+) -> str:
+    """Build the legacy RSA payload value used by older package versions.
+
+    Retained for compatibility and explicit opt-in. The recovered 9.6 native
+    code calls a build_sign stage and uses fields such as did,
+    creditDisable, ssml and extraInfo, but current evidence does not prove RSA
+    PKCS#1 v1.5 (or this public key) is the production algorithm. The client
+    never calls this helper automatically.
+    """
     ssml_md5 = hashlib.md5(ssml.encode("utf-8")).hexdigest()
     sign_input = f"appid:{app_id}&did:{device_id}&creditDisable:false&ssml:{ssml_md5}"
     if extra_info is not None:
         sign_input += f"&extraInfo:{extra_info}"
-    return rsa_encrypt_pkcs1v15(sign_input)
+    return rsa_encrypt_pkcs1v15(sign_input, pem=pem)
 
 
 def make_sign_header(url: str, appvr: str, device_time: str, tdid: str) -> str:
-    """Generate CapCut HTTP request sign header."""
+    """Return a candidate HTTP sign header used by this client implementation.
+
+    This formula is confirmed for the working common-task compatibility route.
+    """
     path = url.split("?", 1)[0]
     sign_str = f"9e2c|{path[-7:]}|3|{appvr}|{device_time}|{tdid}|11ac"
     return hashlib.md5(sign_str.encode("utf-8")).hexdigest()

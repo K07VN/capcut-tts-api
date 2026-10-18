@@ -21,8 +21,9 @@ from capcut_tts_api.models import (
     VoiceInfo,
     Word,
 )
+from capcut_tts_api.action import TTSConfigurationError, build_tts_action, parse_provider_params
 
-__version__ = "1.0.0"
+__version__ = "1.5.0"
 
 __all__ = [
     "CapCutClient",
@@ -37,5 +38,8 @@ __all__ = [
     "CapCutUploadError",
     "CapCutSignError",
     "CapCutTaskError",
+    "TTSConfigurationError",
+    "build_tts_action",
+    "parse_provider_params",
     "__version__",
 ]

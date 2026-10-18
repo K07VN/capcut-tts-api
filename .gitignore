@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+build/
+*.egg-info/
+.venv/
+dist/
+*.mp3
+*.srt
+voice-parts/
+tts-from-srt-validation/

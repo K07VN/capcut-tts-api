@@ -5,6 +5,7 @@ Data models and dataclasses for CapCut TTS API client.
 from dataclasses import dataclass, field, asdict
 from typing import Any, Dict, List, Optional, Union
 import json
+import re
 from pathlib import Path
 from copy import deepcopy
 
@@ -91,6 +92,7 @@ class Utterance:
     start_time: int
     end_time: int
     words: List[Word] = field(default_factory=list)
+    translation_text: Optional[str] = None
 
 
 @dataclass
@@ -99,13 +101,47 @@ class SubtitleResult:
 
     utterances: List[Utterance] = field(default_factory=list)
     full_text: str = ""
+    full_translation_text: str = ""
+
+    @classmethod
+    def from_srt(cls, path: Union[str, Path]) -> "SubtitleResult":
+        """Read a UTF-8 SubRip file into timed utterances for TTS workflows."""
+        content = Path(path).read_text(encoding="utf-8-sig")
+        blocks = re.split(r"\r?\n\s*\r?\n", content.strip()) if content.strip() else []
+        utterances: List[Utterance] = []
+        for block in blocks:
+            lines = block.splitlines()
+            timing_index = next((i for i, line in enumerate(lines) if "-->" in line), None)
+            if timing_index is None:
+                continue
+            timing = lines[timing_index]
+            match = re.match(r"\s*(\S+)\s*-->\s*(\S+)", timing)
+            if not match:
+                raise ValueError(f"Invalid SRT timing line: {timing!r}")
+            start = cls._parse_srt_timestamp(match.group(1))
+            end = cls._parse_srt_timestamp(match.group(2))
+            text = "\n".join(lines[timing_index + 1:]).strip()
+            if text:
+                utterances.append(Utterance(text=text, start_time=start, end_time=max(start, end)))
+        return cls(utterances=utterances, full_text=" ".join(u.text for u in utterances))
+
+    @staticmethod
+    def _parse_srt_timestamp(value: str) -> int:
+        match = re.fullmatch(r"(\d+):(\d{2}):(\d{2})[,.](\d{3})", value.strip())
+        if not match:
+            raise ValueError(f"Invalid SRT timestamp: {value!r}")
+        hours, minutes, seconds, millis = (int(part) for part in match.groups())
+        return ((hours * 60 + minutes) * 60 + seconds) * 1000 + millis
 
     @classmethod
     def from_payload(cls, payload: Dict[str, Any]) -> "SubtitleResult":
         """Parse subtitle payload dictionary into SubtitleResult object."""
+        if not isinstance(payload, dict):
+            return cls()
         raw_utterances = payload.get("utterances") or []
         utterance_list = []
         text_parts = []
+        translation_parts = []
 
         for item in raw_utterances:
             words = [
@@ -118,17 +154,61 @@ class SubtitleResult:
                 for w in item.get("words", [])
             ]
             text = item.get("text", "")
+            translation_text = item.get("translation_text")
             if text:
                 text_parts.append(text)
+            if translation_text:
+                translation_parts.append(translation_text)
             utterance_list.append(
                 Utterance(
                     text=text,
                     start_time=item.get("start_time", 0),
                     end_time=item.get("end_time", 0),
                     words=words,
+                    translation_text=translation_text,
                 )
             )
-        return cls(utterances=utterance_list, full_text=" ".join(text_parts))
+        return cls(
+            utterances=utterance_list,
+            full_text=" ".join(text_parts),
+            full_translation_text=" ".join(translation_parts),
+        )
+
+    @staticmethod
+    def _srt_timestamp(milliseconds: Union[int, float]) -> str:
+        """Format millisecond timestamps as the SRT HH:MM:SS,mmm form."""
+        total_ms = max(0, int(round(float(milliseconds))))
+        hours, remainder = divmod(total_ms, 3_600_000)
+        minutes, remainder = divmod(remainder, 60_000)
+        seconds, millis = divmod(remainder, 1_000)
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d},{millis:03d}"
+
+    def to_srt(self, use_translation: bool = False) -> str:
+        """Serialize utterances to SRT; use observed translation_text if requested."""
+        blocks = []
+        for index, utterance in enumerate(self.utterances, 1):
+            selected = (
+                utterance.translation_text
+                if use_translation and utterance.translation_text
+                else utterance.text
+            )
+            text = str(selected or "").replace("\r\n", "\n").replace("\r", "\n").strip()
+            if not text:
+                continue
+            start = max(0, int(round(float(utterance.start_time))))
+            end = max(start, int(round(float(utterance.end_time))))
+            blocks.append(
+                f"{len(blocks) + 1}\n"
+                f"{self._srt_timestamp(start)} --> {self._srt_timestamp(end)}\n"
+                f"{text}"
+            )
+        return "\n\n".join(blocks) + ("\n" if blocks else "")
+
+    def write_srt(self, path: Union[str, Path], use_translation: bool = False) -> Path:
+        """Write UTF-8 SRT and return its path."""
+        output = Path(path)
+        output.write_text(self.to_srt(use_translation=use_translation), encoding="utf-8", newline="\n")
+        return output
 
 
 @dataclass
@@ -141,6 +221,9 @@ class VoiceInfo:
     lang: str
     lan: str
     captured_at: Optional[str] = None
+    catalog_kind: Optional[str] = None
+    source: Optional[str] = None
+    service_compatibility: Optional[str] = None
 
     @classmethod
     def load_catalog(cls, file_path: Union[str, Path]) -> List["VoiceInfo"]:
@@ -150,4 +233,8 @@ class VoiceInfo:
             return []
         with open(path, "r", encoding="utf-8") as fp:
             data = json.load(fp)
-        return [cls(**item) for item in data]
+        # Voice.json also carries explicitly tagged records recovered from
+        # the local digital-human asset cache. They are useful metadata, but
+        # are not proven to be TTS service speakers and must not be silently
+        # returned as such by this legacy TTS catalog loader.
+        return [cls(**item) for item in data if item.get("catalog_kind") != "digital_human_voice"]

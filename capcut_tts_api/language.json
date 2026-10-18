@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "scope": "Observed CapCut 9.6.0.4097 language and speech-mode evidence; not a complete server support list.",
+  "speech_modes": [
+    {
+      "mode": "media asr",
+      "kind": "speech recognition",
+      "evidence": "lyra_cli_client.dll embedded CLI help/parser",
+      "behavior": "Recognizes local audio/video and returns sentence-level ASR JSON.",
+      "confidence": "observed"
+    },
+    {
+      "mode": "media translate",
+      "kind": "translation of ASR JSON",
+      "evidence": "lyra_cli_client.dll embedded CLI help/parser",
+      "behavior": "Consumes sentence-level ASR JSON, preserves source sentence/timing, adds translation; does not run ASR.",
+      "common_task_translation_response_field_observed": "utterances[].translation_text",
+      "runtime_evidence": "A real vi-VN to en-US common-task translation returned translation_text per utterance with status succeed.",
+      "confidence": "observed",
+      "network_payload": "unresolved"
+    },
+    {
+      "mode": "media vad",
+      "kind": "voice activity detection",
+      "evidence": "lyra_cli_client.dll embedded CLI help/parser",
+      "behavior": "Detects voice activity; separate from transcription.",
+      "confidence": "observed"
+    },
+    {
+      "mode": "draft algo subtitle-recognize",
+      "kind": "draft subtitle recognition",
+      "evidence": "lyra_cli_client.dll embedded CLI help/parser",
+      "language_examples": [
+        "zh",
+        "en",
+        "ja-JP"
+      ],
+      "confidence": "observed examples; support set unknown"
+    },
+    {
+      "mode": "draft subtitle recognize",
+      "kind": "draft subtitle recognition",
+      "evidence": "lyra_cli_client.dll embedded CLI help/parser",
+      "confidence": "observed"
+    },
+    {
+      "mode": "draft lyrics recognize",
+      "kind": "lyrics recognition",
+      "evidence": "lyra_cli_client.dll embedded CLI help/parser",
+      "confidence": "observed"
+    }
+  ],
+  "language_codes": {
+    "media_asr_exact_observed": {
+      "codes": [
+        "auto",
+        "zh-CN",
+        "en-US",
+        "ja-JP",
+        "ko-KR"
+      ],
+      "evidence": "lyra_cli_client.dll ASR parser/help",
+      "confidence": "explicit examples/parser values; not exhaustive"
+    },
+    "media_asr_lowercase_aliases_observed": {
+      "codes": [
+        "zh-cn",
+        "en-us",
+        "ja-jp",
+        "ko-kr"
+      ],
+      "evidence": "lyra_cli_client.dll parser/help",
+      "confidence": "explicit aliases; not exhaustive"
+    },
+    "draft_subtitle_language_examples": {
+      "codes": [
+        "zh",
+        "en",
+        "ja-JP"
+      ],
+      "evidence": "lyra_cli_client.dll draft subtitle-recognize help",
+      "confidence": "examples only; not full support list"
+    },
+    "draft_translate_target_examples": {
+      "codes": [
+        "zh-CN",
+        "en-US",
+        "ja-JP"
+      ],
+      "evidence": "lyra_cli_client.dll media translate help",
+      "confidence": "examples only"
+    },
+    "ui_locales_observed": {
+      "codes": [
+        "cs-CZ",
+        "de-DE",
+        "el-GR",
+        "es-LA",
+        "fi-FI",
+        "fil-PH",
+        "fr-FR",
+        "hu-HU",
+        "id-ID",
+        "it-IT",
+        "ja-JP",
+        "ko-KR",
+        "ms-MY",
+        "nl-NL",
+        "pl-PL",
+        "pt-BR",
+        "ro-RO",
+        "ru-RU",
+        "sv-SE",
+        "th-TH",
+        "tr-TR",
+        "vi-VN",
+        "en",
+        "zh-Hant-TW"
+      ],
+      "evidence": "CapCut common_agent locale resource filenames",
+      "confidence": "observed UI locales; does not imply ASR support"
+    },
+    "tts_catalog_languages": {
+      "codes": [
+        "de-DE",
+        "en-US",
+        "es-ES",
+        "fr-FR",
+        "id-ID",
+        "ja-JP",
+        "pt-BR",
+        "th-TH",
+        "vi-VN",
+        "zh-CN"
+      ],
+      "evidence": "repository Voice.json TTS records",
+      "confidence": "catalog metadata only; does not imply STT support"
+    }
+  },
+  "limitations": [
+    "No claim of exhaustive ASR/translation language support.",
+    "UI locales and TTS catalog languages are kept separate from ASR evidence.",
+    "The standalone HTTP /lv/v1/translate/translate_texts route was observed in DeepAgentsService.dll, but its payload and response schema remain unresolved."
+  ]
+}

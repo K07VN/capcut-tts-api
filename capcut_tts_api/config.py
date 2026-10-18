@@ -5,7 +5,8 @@ CapCut TTS API Configuration & Defaults.
 BASE_URL = "https://editor-api-sg.capcutapi.com"
 VOD_REGION = "sdwdmwlll"
 VOD_SERVICE = "vod"
-
+import random
+device = str(random.randint(10**(20 - 1), 10**20 - 1))
 DEFAULT_DEVICE = {
     "aid": "359289",
     "app_name": "CapCut",
@@ -17,13 +18,13 @@ DEFAULT_DEVICE = {
     "device_type": "MacBookPro17,4",
     "device_brand": "MacBookPro17,4",
     "os_version": "15.7.4",
-    "device_id": "76471456455646328721",
-    "iid": "76471456455646328721",
+    "device_id": device,
+    "iid": device,
     "region": "VN",
     "loc": "VN",
     "lan": "vi-VN",
     "pf": "3",
-    "tdid": "76471456455646328721",
+    "tdid": device,
 }
 
 TTS_SIGN_PUBLIC_KEY_PEM = """-----BEGIN PUBLIC KEY-----
